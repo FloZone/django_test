@@ -1,0 +1,152 @@
+{% extends 'firstapp/base.html' %}
+
+{% block content %}
+
+    <div class="jumbotron">
+        <div class="container">
+            <h1>Hello World!</h1>
+            <p>
+                "Simple" Django project. Biatch.
+            </p>
+        </div>
+    </div>
+
+    <div id="message_container" class="container">
+        {% include 'firstapp/message_list.html' %}
+    </div>
+
+    <div class="container">
+        {% if user.is_authenticated %}
+            <p id="result"></p>
+            <form id="post_form">
+                {% csrf_token %}
+                <label for="answer_text">Poster</label>
+                <textarea name="message_text" id="message_text" maxlength="140"></textarea>
+                <input type="submit" value="Post" />
+            </form>
+        {% endif %}
+    </div>
+
+{% endblock content %}
+
+
+{% block javascript %}
+
+    <script type="text/javascript">
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
+    </script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            // Get the messages
+            var get_message = function () {
+                $.ajax({
+                    type: "get",
+                    url: "{% url 'firstapp:get_message' %}",
+                    success: function(response) {
+                        $('#message_container').html(response);
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        $('#result').html(jqXHR.responseText);
+                    }
+                });
+            };
+
+            // When submit the form, post the message
+            var post_form = $('#post_form');
+            post_form.submit(function(event) {
+                event.preventDefault();
+                $.ajax({
+                    type: "post",
+                    data: post_form.serialize(),
+                    url: "{% url 'firstapp:post' %}",
+                    success: function(response) {
+                        $('#result').html("");
+                        $('#message_text').val("");
+                        get_message()
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        $('#result').html(jqXHR.responseText);
+                    }
+                });
+                return false;
+            });
+
+            // Delete a message
+            function delete_message(message_id) {
+                $.ajax({
+                    type: "post",
+                    data: {
+                        "message_id": message_id
+                    },
+                    url: "{% url 'firstapp:delete_message' %}",
+                    beforeSend: function(xhr, settings) {
+                        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                        }
+                    },
+                    success: function(response) {
+                        $('#result').html("");
+                        get_message()
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        $('#result').html(jqXHR.responseText);
+                    }
+                });
+            }
+
+        });
+    </script>
+
+    <script type="text/javascript">
+
+        var ws = new TornadoWebSocket(
+            "/my_ws",
+            { host:"localhost", port:"1337" }
+        );
+
+        // Automatically called when a new client connects
+        ws.on('open', function (event) {
+            console.log('Websocket: OPEN', event);
+
+            // Send a ping to the server
+            var message = 'PING from index';
+            console.log("Websocket: send message: " + message);
+            ws.emit('message_event', message);
+
+            // Receive a pong
+            ws.on('message_event', function(data) {
+                console.log("Websocket: receive message:", data);
+                //data["message"] === "PONG") {
+            });
+        });
+
+
+        // Automatically called when a client disconnects
+        ws.on('close', function(event) {
+            console.log('Websocket: CLOSE', event);
+        });
+
+        // Automatically called when an error occurs
+        ws.on('error', function(event) {
+            console.log('Websocket: ERROR', event);
+        });
+
+    </script>
+
+
+{% endblock javascript %}

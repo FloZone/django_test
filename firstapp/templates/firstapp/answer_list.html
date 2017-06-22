@@ -1,0 +1,19 @@
+{% if message.answer_set %}
+    <ul>
+        {% for answer in message.answer_set.all|dictsort:"publication_date" %}
+            <li>
+                {% if user.is_authenticated %}
+                    {% if user == answer.owner or user.is_staff %}
+                        {# Delete answer button #}
+                    {% endif %}
+                {% endif %}
+
+                <b>{{ answer.owner }} </b>
+                <i>{{ answer.publication_date }}: </i>
+                {{ answer.answer_text }}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No answers are available.</p>
+{% endif %}
