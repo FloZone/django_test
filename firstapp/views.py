@@ -3,18 +3,26 @@ import datetime
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, Http404
 from django.contrib.auth import logout
+from django.contrib.auth.models import User
 
 from tornado_websockets.websocket import WebSocket
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import permissions, viewsets
+from rest_framework.reverse import reverse
+
 from .models import Message, Answer
+from .serializers import MessageSerializer, AnswerSerializer, UserSerializer
+from .permissions import IsOwnerOrAdminOrReadOnly
 
 
-# Create your views here.
+# Views
+#############
 
 
-# Index view based on generic.listview
 class IndexView(generic.ListView):
     template_name = 'firstapp/index.html'
     context_object_name = 'message_list'
@@ -29,6 +37,10 @@ class DetailView(generic.DetailView):
     model = Message
     template_name = 'firstapp/detail.html'
     context_object_name = 'message'
+
+
+# Action
+#############
 
 
 def logout_user(request):
@@ -108,6 +120,7 @@ def delete_answer(request):
 
 
 # Websockets
+#############
 
 
 # Make a new instance of WebSocket and automatically add handler '/ws/my_ws' to Tornado handlers
@@ -132,9 +145,80 @@ def error(socket, data):
 
 
 @my_ws.on
-def message_event(socket, data):
-    print('Receive message: %s' % data)
-    if 'PING' in data.get('message'):
-        message = data.get('message').replace("PING", "PONG")
-        print('Send message: %s' % message)
-        my_ws.emit("message_event", message)
+def ping(socket, data):
+    print('Receive PING %s' % data.get('message'))
+    print('Send PONG')
+    my_ws.emit("pong", )
+
+
+# REST framework
+#############
+
+
+# class RestMessageList(APIView):
+#     def get(self, request):
+#         messages = Message.objects.all()
+#         serializer = MessageSerializer(messages, many=True)
+#         return Response(serializer.data)
+#
+#     def post(self, request):
+#         serializer = MessageSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#
+# class RestMessageDetail(APIView):
+#     def get_object(self, pk):
+#         try:
+#             return Message.objects.get(pk=pk)
+#         except Message.DoesNotExist:
+#             raise Http404
+#
+#     def get(self, request, pk):
+#         message = self.get_object(pk)
+#         serializer = MessageSerializer(message)
+#         return Response(serializer.data)
+#
+#     def delete(self, request, pk):
+#         message = self.get_object(pk)
+#         message.delete()
+#         return HttpResponse(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET'])
+def api_root(request):
+    """ REST API root which lists all parts """
+    return Response({
+        'user': reverse('user_list', request=request),
+        'message': reverse('message_list', request=request),
+        'answer': reverse('answer_list', request=request),
+    })
+
+
+class RestMessageView(viewsets.ModelViewSet):
+    """ REST API message view. Read for authenticated, edit for owners or admins """
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = (permissions.IsAuthenticated, IsOwnerOrAdminOrReadOnly,)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+class RestAnswerView(viewsets.ModelViewSet):
+    """ REST API answer view. Read for authenticated, edit for owners or admins """
+    queryset = Answer.objects.all()
+    serializer_class = AnswerSerializer
+    permission_classes = (permissions.IsAuthenticated, IsOwnerOrAdminOrReadOnly,)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+class RestUserView(viewsets.ModelViewSet):
+    """ REST API user view. Read for authenticated, edit for owners or admins """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser,)

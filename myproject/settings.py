@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'firstapp.apps.FirstappConfig',
     'social_django',
     'tornado_websockets',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -146,10 +147,21 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 TORNADO = {
     'port': 1337,    # 8000 by default
     'handlers': [
-        tornado_websockets.django_app(),  # django_app is using a "wildcard" route, so it should be the last element
-        (r'%s(.*)' % STATIC_URL, tornado.web.StaticFileHandler, {'path': STATIC_ROOT}), # Django specific configuration about static files
-    ],  # [] by default
+        # django_app is using a "wildcard" route, so it should be the last element
+        tornado_websockets.django_app(),
+        # Django specific configuration about static files
+        (r'%s(.*)' % STATIC_URL, tornado.web.StaticFileHandler, {'path': STATIC_ROOT}),
+    ],
     'settings': {
-        'debug':True,
-    },  # {} by default
+        'debug': True,
+    },
+}
+
+
+# REST framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'PAGE_SIZE': 10
 }

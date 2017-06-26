@@ -12,7 +12,23 @@
     </div>
 
     <div id="message_container" class="container">
-        {% include 'firstapp/message_list.html' %}
+        {% if message_list %}
+            <ul>
+                {% for message in message_list %}
+                    <li>
+                        {% if user.is_authenticated %}
+                            {% if user == message.owner or user.is_staff %}
+                                (<button rel="{{ message.id }}">X</button>)
+                            {% endif %}
+                        {% endif %}
+
+                        <a href="{% url 'firstapp:detail' message.id %}">{{ message.message_text }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No messages are available.</p>
+        {% endif %}
     </div>
 
     <div class="container">
@@ -20,7 +36,7 @@
             <p id="result"></p>
             <form id="post_form">
                 {% csrf_token %}
-                <label for="answer_text">Poster</label>
+                <label for="message_text">Poster</label>
                 <textarea name="message_text" id="message_text" maxlength="140"></textarea>
                 <input type="submit" value="Post" />
             </form>
@@ -50,8 +66,16 @@
         }
         var csrftoken = getCookie('csrftoken');
     </script>
+
     <script type="text/javascript">
+
         $(document).ready(function() {
+            // CSRF TOKEN
+            function csrfSafeMethod(method) {
+                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+
+
             // Get the messages
             var get_message = function () {
                 $.ajax({
@@ -86,30 +110,35 @@
                 return false;
             });
 
-            // Delete a message
-            function delete_message(message_id) {
+
+            $('#message_container').find('button').click(function () {
+                var message_id = $(this).attr('rel');
+                var url = "{% url 'firstapp:rest:message-detail' "message_id" %}"
+                    .replace('/message_id/', '/' + message_id + '/');
+
                 $.ajax({
-                    type: "post",
-                    data: {
-                        "message_id": message_id
-                    },
-                    url: "{% url 'firstapp:delete_message' %}",
+                    type: "delete",
+                    url: url,
+                    // Set CSRF token
                     beforeSend: function(xhr, settings) {
                         if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
                             xhr.setRequestHeader("X-CSRFToken", csrftoken);
                         }
                     },
                     success: function(response) {
-                        $('#result').html("");
-                        get_message()
+                        $('#result').html("Delete success");
+                        // refresh message list
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         $('#result').html(jqXHR.responseText);
                     }
                 });
-            }
+
+
+            })
 
         });
+
     </script>
 
     <script type="text/javascript">
@@ -124,17 +153,14 @@
             console.log('Websocket: OPEN', event);
 
             // Send a ping to the server
-            var message = 'PING from index';
-            console.log("Websocket: send message: " + message);
-            ws.emit('message_event', message);
+            console.log("Websocket: send PING");
+            ws.emit('ping', "from index.html");
 
             // Receive a pong
-            ws.on('message_event', function(data) {
-                console.log("Websocket: receive message:", data);
-                //data["message"] === "PONG") {
+            ws.on('pong', function(data) {
+                console.log("Websocket: receive PONG " + data.message);
             });
         });
-
 
         // Automatically called when a client disconnects
         ws.on('close', function(event) {
@@ -147,6 +173,5 @@
         });
 
     </script>
-
 
 {% endblock javascript %}
