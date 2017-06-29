@@ -1,22 +1,51 @@
 import datetime
+import logging
 
-from django.shortcuts import get_object_or_404, render
-from django.views import generic
-from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, Http404
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
-
-from tornado_websockets.websocket import WebSocket
-
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
+from django.shortcuts import get_object_or_404, render
+from django.views import generic
+from rest_framework import permissions, viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import permissions, viewsets
 from rest_framework.reverse import reverse
+from tornado_websockets.websocket import WebSocket
 
 from .models import Message, Answer
-from .serializers import MessageSerializer, AnswerSerializer, UserSerializer
 from .permissions import IsOwnerOrAdminOrReadOnly
+from .serializers import MessageSerializer, AnswerSerializer, UserSerializer
+
+# Websockets
+#############
+
+
+# Make a new instance of WebSocket and automatically add handler '/ws/my_ws' to Tornado handlers
+my_ws = WebSocket('/my_ws')
+
+@my_ws.on
+def open(socket, data):
+    """ Automatically called when a new client connects. """
+    print('New connection')
+
+@my_ws.on
+def close(socket, data):
+    """ Automatically called when a client disconnects. """
+    print('Disconnection')
+
+
+@my_ws.on
+def error(socket, data):
+    """ Automatically called when an error occurs. """
+    print(data)
+
+
+@my_ws.on
+def ping(socket, data):
+    print('Receive PING %s' % data.get('message'))
+    print('Send PONG')
+    my_ws.emit("pong", "from server")
 
 
 # Views
@@ -119,38 +148,6 @@ def delete_answer(request):
         return HttpResponseBadRequest("POST method only")
 
 
-# Websockets
-#############
-
-
-# Make a new instance of WebSocket and automatically add handler '/ws/my_ws' to Tornado handlers
-my_ws = WebSocket('/my_ws')
-
-
-@my_ws.on
-def open(socket, data):
-    """ Automatically called when a new client connects. """
-    print('New connection')
-
-@my_ws.on
-def close(socket, data):
-    """ Automatically called when a client disconnects. """
-    print('Disconnection')
-
-
-@my_ws.on
-def error(socket, data):
-    """ Automatically called when an error occurs. """
-    print(data)
-
-
-@my_ws.on
-def ping(socket, data):
-    print('Receive PING %s' % data.get('message'))
-    print('Send PONG')
-    my_ws.emit("pong", )
-
-
 # REST framework
 #############
 
@@ -187,24 +184,26 @@ def ping(socket, data):
 #         return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(['GET'])
-def api_root(request):
-    """ REST API root which lists all parts """
-    return Response({
-        'user': reverse('user_list', request=request),
-        'message': reverse('message_list', request=request),
-        'answer': reverse('answer_list', request=request),
-    })
-
-
+@my_ws.on
 class RestMessageView(viewsets.ModelViewSet):
-    """ REST API message view. Read for authenticated, edit for owners or admins """
+    """
+    REST API message view. Read for authenticated, edit for owners or admins
+    """
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = (permissions.IsAuthenticated, IsOwnerOrAdminOrReadOnly,)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        serializer.save(owner=self.request.user, publication_date=datetime.datetime.now())
+        logging.debug('RestMessageView.perform_create: new message saved')
+
+    def list(self, request, *args, **kwargs):
+        logging.debug('RestMessageView.list')
+        return super().list(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        logging.debug('RestMessageView.create')
+        return super().create(request, *args, **kwargs)
 
 
 class RestAnswerView(viewsets.ModelViewSet):
@@ -214,7 +213,8 @@ class RestAnswerView(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, IsOwnerOrAdminOrReadOnly,)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        serializer.save(owner=self.request.user, publication_date=datetime.datetime.now())
+        logging.debug('RestAnswerView.perform_create: new message saved')
 
 
 class RestUserView(viewsets.ModelViewSet):

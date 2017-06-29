@@ -11,6 +11,7 @@ class Message(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     message_text = models.CharField('message', max_length=140)
     publication_date = models.DateTimeField('publication date')
+    answers = models.ForeignKey('self', on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.publication_date) \

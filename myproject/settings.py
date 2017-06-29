@@ -129,6 +129,24 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
+# Debug level
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+        },
+    },
+}
+
+
 # Google oauth settings
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "984610774644-mhp68l62kr6nth26itaje3iudad8v7ug"
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "dJOciwkGr8iYro2wfKiJxq_O"
@@ -163,5 +181,4 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'PAGE_SIZE': 10
 }
