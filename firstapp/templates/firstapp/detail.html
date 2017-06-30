@@ -12,22 +12,13 @@
         <p>{{ message.owner }}</p>
         <p>{{ message.publication_date }}</p>
         <p>{{ message.message_text }}</p>
-    </div>
 
-    <div id="answer_container" class="container">
-        {% include 'firstapp/answer_list.html' %}
-    </div>
-
-    <div class="container">
         {% if user.is_authenticated %}
-            <p id="result"></p>
-            <form id="answer_form">
-                {% csrf_token %}
-                <label for="answer_text">Répondre</label>
-                <textarea name="answer_text" id="answer_text" maxlength="140"></textarea>
-                <input type="submit" value="Answer" />
-            </form>
+            {% if user == message.owner or user.is_staff %}
+                (<button id=delete rel="{{ message.id }}">X</button>)
+            {% endif %}
         {% endif %}
+
     </div>
 
 {% endblock content %}
@@ -37,78 +28,33 @@
 
     <script type="text/javascript">
         $(document).ready(function() {
-            // Get the answers
-            var get_answer = function () {
-                $.ajax({
-                    type: "get",
-                    url: "{% url 'firstapp:get_answer' message.id %}",
-                    success: function(response) {
-                        $('#answer_container').html(response);
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        $('#result').html(jqXHR.responseText);
-                    }
-                });
-            };
 
-            // When submit the form, answer to a message
-            var answer_form = $('#answer_form');
-            answer_form.submit(function(event) {
-                event.preventDefault();
+            // Click on a delete button
+            $('#delete').on('click', function () {
+                var url = $(this).attr('rel');
+
                 $.ajax({
-                    data: answer_form.serialize(),
-                    type: "post",
-                    url: "{% url 'firstapp:answer' message.id %}",
+                    type: "delete",
+                    url: url,
+                    // Set CSRF token
+                    beforeSend: function(xhr, settings) {
+                        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                        }
+                    },
                     success: function(response) {
                         $('#result').html("");
-                        $('#answer_text').val("");
-                        get_answer()
+                        // Refresh the message list
+                        get_message_list();
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         $('#result').html(jqXHR.responseText);
                     }
                 });
-                return false;
             });
+
 
         });
     </script>
-
-        <script type="text/javascript">
-
-        var ws = new TornadoWebSocket(
-            "/my_ws",
-            { host:"localhost", port:"1337" }
-        );
-
-        // Automatically called when a new client connects
-        ws.on('open', function (event) {
-            console.log('Websocket: OPEN', event);
-
-            // Send a ping to the server
-            var message = 'PING from message {{ message.message_text }}';
-            console.log("Websocket: send message: " + message);
-            ws.emit('message_event', message);
-
-            // Receive a pong
-            ws.on('message_event', function(data) {
-                console.log("Websocket: receive message:", data);
-                //data["message"] === "PONG") {
-            });
-        });
-
-
-        // Automatically called when a client disconnects
-        ws.on('close', function(event) {
-            console.log('Websocket: CLOSE', event);
-        });
-
-        // Automatically called when an error occurs
-        ws.on('error', function(event) {
-            console.log('Websocket: ERROR', event);
-        });
-
-    </script>
-
 
 {% endblock javascript %}

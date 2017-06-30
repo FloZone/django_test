@@ -1,21 +1,23 @@
 {% extends 'firstapp/base.html' %}
 
+{% load i18n %}
+
 {% block content %}
 
     <div class="jumbotron">
         <div class="container">
-            <h1>Hello World!</h1>
+            <h1>{% trans "Hello World!" %}</h1>
             <p>
-                "Simple" Django project. Biatch.
+                {% trans "Simple Django project. Biatch." %}
             </p>
         </div>
     </div>
 
     <div class="container">
-        {% if message_list %}
-            <ul id="message_container">
-                                    <!-- When the page is loaded the first time -->
-                    {% for message in message_list %}
+        <ul id="message_container">
+            <!-- When the page is loaded the first time -->
+            {% comment %} {% if message_list %}
+                {% for message in message_list %}
                     <li>
                         {% if user.is_authenticated %}
                             {% if user == message.owner or user.is_staff %}
@@ -26,10 +28,10 @@
                         <a href="{% url 'firstapp:detail' message.id %}">{{ message.message_text }}</a>
                     </li>
                 {% endfor %}
-            </ul>
-        {% else %}
-            <p>No messages are available.</p>
-        {% endif %}
+            {% else %}
+                <p>No messages are available.</p>
+            {% endif %}{% endcomment %}
+        </ul>
     </div>
 
     <div class="container">
@@ -37,22 +39,24 @@
             <p id="result"></p>
             <form id="post_form">
                 {% csrf_token %}
-                <label for="message_text">Poster</label>
-                <textarea name="message_text" id="message_text" maxlength="140"></textarea>
-                <input type="submit" value="Post" />
+                <label for="message_text">{% trans "New message" %}</label>
+                <input type="text" name="message_text" id="message_text" maxlength="140" />
+                <input type="submit" value="{% trans Post %}" />
             </form>
         {% endif %}
     </div>
 
 
     <!-- Snackbar -->
-    <div id="snackbar">New message(s) !</div>
+    <div id="snackbar"></div>
 {% endblock content %}
 
 
 {% block javascript %}
 
     <script type="text/javascript">
+        // CSRF TOKEN
+
         // In order to use a CSRF token with ajax requests
         function getCookie(name) {
             var cookieValue = null;
@@ -76,50 +80,45 @@
     </script>
 
     <script type="text/javascript">
-
-        var ws = new TornadoWebSocket(
-            "/my_ws",
-            { host:"localhost", port:"1337" }
-        );
-
-        // Automatically called when a new client connects
-        ws.on('open', function (event) {
-            console.log('Websocket: OPEN', event);
-
-            //ws.emit('ping', 'my_data');
-
-            // When a new message is posted
-            ws.on('patate', function (data) {
-                console.log("Websocket: new message(s) " + data);
-                if(data.message === "new") {
-                    // Show a notification
-                    var snackbar = document.getElementById("snackbar")
-                    snackbar.className = "show";
-                    setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
-                    // Refresh the message list
-                    get_message_list();
-                }
-            });
-        });
-
-        // Automatically called when a client disconnects
-        ws.on('close', function(event) {
-            console.log('Websocket: CLOSE', event);
-        });
-
-        // Automatically called when an error occurs
-        ws.on('error', function(event) {
-            console.log('Websocket: ERROR', event);
-        });
-
-    </script>
-
-    <script type="text/javascript">
+        // AJAX
 
         // When the page is fully loaded
         $(document).ready(function() {
+            // Get the snackbar
+            var snackbar = $("#snackbar");
+
+
             // First of all, load the message list
             get_message_list();
+
+
+            ws = new WebSocket("ws://localhost:1234/ws");
+
+            ws.onmessage = function(evt) {
+                console.log("Websocket: receive: " + evt.data);
+                if(evt.data.startsWith("message_update")) {
+                    console.log("refresh message list");
+
+                    // Snackbar
+                    snackbar.html(evt.data.replace("message_update", ""));
+                    snackbar.toggleClass("show");
+                    setTimeout(function(){ snackbar.toggleClass("show"); }, 3000);
+
+                    get_message_list();
+                }
+            };
+
+            ws.onclose = function(evt) {
+                console.log("Websocket: onclose");
+            };
+
+            ws.onopen = function(evt) {
+                console.log("Websocket: onopen");
+                var send = "ping";
+                console.log("Websocket: send: " + send);
+                ws.send(send);
+            };
+
         });
 
         // Get the message list and display it
@@ -128,24 +127,30 @@
                 type: "get",
                 url: "{% url 'firstapp:rest:message-list' %}",
                 success: function(data) {
-                    // Display them
                     var content = "";
-                    for(var i = 0; i < data.length; ++i) {
-                        content += "<li>";
 
-                        {% if user.is_authenticated %}
-                            if({{ user.id }} === data[i].owner || {{ user.is_staff }}) {
-                            content += "(<button rel=\"" + data[i].id + "\">X</button>) ";
-                        }
-                        {% endif %}
-
-
-                        var url = "{% url 'firstapp:detail' "1234" %}"
-                            .replace('/1234/', '/' + data[i].id + '/');
-
-                        content += "<a href=\"" + url + "\">" + data[i].message_text + "</a>";
-                        content += "</li>";
+                    // If there is no message
+                    if(typeof data === "string") {
+                        content = data;
                     }
+                    // If there is a list of messages
+                    else {
+                        for(var i = 0; i < data.length; ++i) {
+                            content += "<li>";
+
+                            {% if user.is_authenticated %}
+                                if({{ user.id }} === data[i].owner || {{ user.is_staff }}) {
+                                content += "(<button rel=\"" + data[i].link.delete + "\">X</button>) ";
+                            }
+                            {% endif %}
+
+                            content += "<i>" + data[i].publication_date + "</i> ";
+                            content += data[i].message_text + " ";
+                            content += "<b><a href=\"" + data[i].link.detail + "\">>></a></b>";
+                            content += "</li>";
+                        }
+                    }
+                    // Display the content
                     $('#message_container').html(content);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -165,8 +170,6 @@
                 success: function(response) {
                     $('#result').html("");
                     $('#message_text').val("");
-                    // Refresh the message list
-                    //get_message_list();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     $('#result').html(jqXHR.responseText);
@@ -177,9 +180,7 @@
 
         // Click on a delete button
         $('#message_container').on('click', 'button', function () {
-            var message_id = $(this).attr('rel');
-            var url = "{% url 'firstapp:rest:message-detail' "message_id" %}"
-                .replace('/message_id/', '/' + message_id + '/');
+            var url = $(this).attr('rel');
 
             $.ajax({
                 type: "delete",
@@ -192,8 +193,6 @@
                 },
                 success: function(response) {
                     $('#result').html("");
-                    // Refresh the message list
-                    get_message_list();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     $('#result').html(jqXHR.responseText);

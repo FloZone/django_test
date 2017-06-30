@@ -11,8 +11,6 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-import tornado_websockets
-import tornado.web
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -42,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'firstapp.apps.FirstappConfig',
     'social_django',
-    'tornado_websockets',
     'rest_framework',
 ]
 
@@ -141,7 +138,12 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+        'firstapp': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
         },
     },
 }
@@ -158,22 +160,6 @@ LOGIN_REDIRECT_URL = '/firstapp/'
 SOCIAL_AUTH_USER_MODEL = 'auth.User'
 SOCIAL_AUTH_URL_NAMESPACE = 'firstapp:social'
 SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
-
-
-# Tornado settings
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-TORNADO = {
-    'port': 1337,    # 8000 by default
-    'handlers': [
-        # django_app is using a "wildcard" route, so it should be the last element
-        tornado_websockets.django_app(),
-        # Django specific configuration about static files
-        (r'%s(.*)' % STATIC_URL, tornado.web.StaticFileHandler, {'path': STATIC_ROOT}),
-    ],
-    'settings': {
-        'debug': True,
-    },
-}
 
 
 # REST framework settings
