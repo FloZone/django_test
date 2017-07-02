@@ -7,6 +7,8 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
+from django.utils.translation import gettext
+
 from rest_framework import permissions, viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -36,7 +38,9 @@ class IndexView(generic.ListView):
     context_object_name = 'message_list'
 
     def get_queryset(self):
-        """ Return all published messages. """
+        """
+        Return all published messages.
+        """
         return Message.objects.order_by('-publication_date')
 
 
@@ -103,7 +107,7 @@ class RestMessageView(viewsets.ModelViewSet):
         logger.info('Message.list')
         message_list = super().list(request, *args, **kwargs)
         if len(message_list.data) == 0:
-            return Response('No messages are available.')
+            return Response(gettext('No messages are available.'))
         else:
             return message_list
 

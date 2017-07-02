@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-07-02 14:42+0200\n"
+"POT-Creation-Date: 2017-07-02 17:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,21 +18,25 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. Translators: Index title
-#: .\templates\firstapp\index.html:11
+#: .\firstapp\templates\firstapp\index.html:11
 msgid "Hello World!"
 msgstr "Bonjour Monde!"
 
 #. Translators: Index subtitle
-#: .\templates\firstapp\index.html:15
+#: .\firstapp\templates\firstapp\index.html:15
 msgid "Simple Django project. Biatch."
 msgstr "Projet Django simple. Biatch"
 
 #. Translators: Post message form: label for input text
-#: .\templates\firstapp\index.html:49
+#: .\firstapp\templates\firstapp\index.html:49
 msgid "New message"
 msgstr "Nouveau message"
 
 #. Translators: Post message form: submit button label{% endcomment
-#: .\templates\firstapp\index.html:54
+#: .\firstapp\templates\firstapp\index.html:54
 msgid "Send"
 msgstr "Envoyer"
+
+#: .\firstapp\views.py:110
+msgid "No messages are available."
+msgstr "Aucun message disponible"
