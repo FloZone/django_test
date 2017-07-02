@@ -6,8 +6,12 @@
 
     <div class="jumbotron">
         <div class="container">
-            <h1>{% trans "Hello World!" %}</h1>
+            <h1>
+                {# Translators: Index title #}
+                {% trans "Hello World!" %}
+            </h1>
             <p>
+                {# Translators: Index subtitle #}
                 {% trans "Simple Django project. Biatch." %}
             </p>
         </div>
@@ -39,9 +43,14 @@
             <p id="result"></p>
             <form id="post_form">
                 {% csrf_token %}
-                <label for="message_text">{% trans "New message" %}</label>
+                <label for="message_text">
+                    {# Translators: Post message form: label for input text #}
+                    {% trans "New message" %}
+                </label>
                 <input type="text" name="message_text" id="message_text" maxlength="140" />
-                <input type="submit" value="{% trans Post %}" />
+
+                {# Translators: Post message form: submit button label{% endcomment #}
+                <input type="submit" value="{% trans "Send" %}" />
             </form>
         {% endif %}
     </div>
@@ -49,6 +58,7 @@
 
     <!-- Snackbar -->
     <div id="snackbar"></div>
+
 {% endblock content %}
 
 
