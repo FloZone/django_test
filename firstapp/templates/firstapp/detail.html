@@ -1,10 +1,15 @@
 {% extends 'firstapp/base.html' %}
 
+{% load i18n %}
+
 {% block content %}
 
     <div class="jumbotron">
         <div class="container">
-            <h1>Details</h1>
+            <h1>
+                {# Translators: Detail page title #}
+                {% trans "Details" %}
+            </h1>
         </div>
     </div>
 
