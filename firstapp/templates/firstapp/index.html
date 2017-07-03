@@ -24,7 +24,7 @@
                 {% for message in message_list %}
                     <li>
                         {% if user.is_authenticated %}
-                            {% if user == message.owner or user.is_staff %}
+                            {% if user == message.author or user.is_staff %}
                                 (<button rel="{{ message.id }}">X</button>)
                             {% endif %}
                         {% endif %}
@@ -55,7 +55,6 @@
         {% endif %}
     </div>
 
-
     <!-- Snackbar -->
     <div id="snackbar"></div>
 
@@ -65,31 +64,6 @@
 {% block javascript %}
 
     <script type="text/javascript">
-        // CSRF TOKEN
-
-        // In order to use a CSRF token with ajax requests
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        var csrftoken = getCookie('csrftoken');
-        function csrfSafeMethod(method) {
-            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-        }
-    </script>
-
-    <script type="text/javascript">
         // AJAX
 
         // When the page is fully loaded
@@ -97,11 +71,10 @@
             // Get the snackbar
             var snackbar = $("#snackbar");
 
-
-            // First of all, load the message list
+            // Load the message list
             get_message_list();
 
-
+            // Connect to Tornado
             ws = new WebSocket("ws://localhost:1234/ws");
 
             ws.onmessage = function(evt) {
@@ -109,8 +82,22 @@
                 if(evt.data.startsWith("message_update")) {
                     console.log("refresh message list");
 
+                    var eventMessage;
+                    var event = evt.data.replace("message_update_", "");
+                    if(event === "create") {
+                        //TODO trad
+                        eventMessage = "New message :)";
+                    }
+                    else if(event === "delete") {
+                        //TODO trad
+                        eventMessage = "A message was deleted :(";
+                    }
+                    else {
+                        eventMessage = "unknown"
+                    }
+
                     // Snackbar
-                    snackbar.html(evt.data.replace("message_update", ""));
+                    snackbar.html(eventMessage);
                     snackbar.toggleClass("show");
                     setTimeout(function(){ snackbar.toggleClass("show"); }, 3000);
 
@@ -149,9 +136,9 @@
                             content += "<li>";
 
                             {% if user.is_authenticated %}
-                                if({{ user.id }} === data[i].owner || {{ user.is_staff }}) {
-                                content += "(<button rel=\"" + data[i].link.delete + "\">X</button>) ";
-                            }
+                                if( data[i].link.delete ) {
+                                    content += "(<button rel=\"" + data[i].link.delete + "\">X</button>) ";
+                                }
                             {% endif %}
 
                             content += "<i>" + data[i].publication_date + "</i> ";

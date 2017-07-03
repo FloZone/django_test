@@ -49,15 +49,13 @@ class HttpHandler(tornado.web.RequestHandler):
         print("HttpHandler: a message has just been posted or deleted")
         self.write('success')
 
-        message = ''
-        if self.get_argument('data') == "create":
-            message = "New message(s) :)"
-        elif self.get_argument('data') == "delete":
-            message = "Some messages were delete :("
+        event = self.get_argument('event')
+        if event != 'create' and event != 'delete':
+            event = 'unknown'
 
         print("HttpHandler: will notify %s user(s)" % len(sockets))
         for s in sockets:
-            s.write_message("message_update%s" % message)
+            s.write_message("message_update_%s" % event)
 
 
 application = tornado.web.Application([

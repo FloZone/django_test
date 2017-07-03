@@ -41,8 +41,19 @@
         <div id="navbar" class="collapse navbar-collapse">
             <ul class="nav navbar-nav navbar-right">
                 {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+
+                        <li><p class="navbar-text">
+                            <a href="{% url "admin:index" %}">Admin Django</a>
+                        </p></li>
+
+                        <li><p class="navbar-text">
+                            <a href="{% url "firstapp:rest" %}">API REST</a>
+                        </p></li>
+                    {% endif %}
+
                     <li><p class="navbar-text">
-                        {{ user.first_name }} {{ user.last_name }} ({{ user.email }})
+                        {{ user.first_name }} {{ user.last_name }} (<a href="{% url 'firstapp:author-detail' user.id %}">{{ user.email }}</a>)
                     </p></li>
 
                     <li>
@@ -73,9 +84,32 @@
 
 </div><!-- /.container -->
 
+<script type="text/javascript" src="{% static 'firstapp/js/jquery-3.2.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'firstapp/js/bootstrap.min.js' %}"></script>
+<script type="text/javascript">
+    // CSRF TOKEN
 
-<script src="{% static 'firstapp/js/jquery-3.2.1.min.js' %}"></script>
-<script src="{% static 'firstapp/js/bootstrap.min.js' %}"></script>
+    // In order to use a CSRF token with ajax requests
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
+    function csrfSafeMethod(method) {
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+</script>
 
 {% block javascript %}
 {% endblock %}

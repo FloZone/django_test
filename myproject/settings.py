@@ -38,9 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'firstapp.apps.FirstappConfig',
+
     'social_django',
     'rest_framework',
+
+    'firstapp'
 ]
 
 MIDDLEWARE = [
@@ -157,9 +159,10 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend'
 )
 LOGIN_REDIRECT_URL = '/firstapp/'
-SOCIAL_AUTH_USER_MODEL = 'auth.User'
+
+AUTH_USER_MODEL = 'firstapp.Author'
 SOCIAL_AUTH_URL_NAMESPACE = 'firstapp:social'
-SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
+SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'last_name', 'email']
 
 
 # REST framework settings

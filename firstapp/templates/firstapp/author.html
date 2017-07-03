@@ -1,0 +1,69 @@
+{% extends 'firstapp/base.html' %}
+
+{% load i18n %}
+
+{% block content %}
+
+    <div class="jumbotron">
+        <div class="container">
+            <h1>
+                {# Translators: Author page title #}
+                {% trans "Author page" %}
+            </h1>
+        </div>
+    </div>
+
+    <div id="author_container" class="container">
+        <p>{{ author.username }}</p>
+        <p>{{ author.first_name }}</p>
+        <p>{{ author.last_name }}</p>
+        <p>{{ author.email }}</p>
+        <p>{{ author.timezone }}</p>
+
+        {% if user.is_authenticated and user.is_staff %}
+            <form action="{% url 'firstapp:author-detail' author.id %}" method="POST">
+                {% csrf_token %}
+                {# Translators: Timezone form select label #}
+                <label for="timezone">{% trans "Update your timezone" %}</label>
+                <select name="timezone">
+                    {% for timezone in timezones %}
+                        <option value="{{ timezone }}" {% if timezone == author.timezone %} selected="selected" {% endif %}>
+                            {{ timezone }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {# Translators: Timezone form button #}
+                <input type="submit" value="{% trans "Update" %}" />
+            </form>
+        {% endif %}
+
+    </div>
+
+    <!-- Snackbar -->
+    <div id="snackbar"></div>
+
+{% endblock content %}
+
+
+{% block javascript %}
+
+    <script type="text/javascript">
+
+        // When the page is fully loaded
+        $(document).ready(function() {
+
+            // Get the snackbar
+            var snackbar = $("#snackbar");
+
+            // If the timezone has just been updated
+            {% if info %}
+                snackbar.html("{{ info }}");
+                snackbar.toggleClass("show");
+                setTimeout(function(){ snackbar.toggleClass("show"); }, 3000);
+            {% endif %}
+
+        });
+
+    </script>
+
+{% endblock javascript %}

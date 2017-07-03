@@ -1,0 +1,116 @@
+{% extends 'firstapp/base.html' %}
+
+{% load i18n %}
+
+{% block content %}
+
+    <div class="jumbotron">
+        <div class="container">
+            <h1>
+                {# Translators: Detail page title #}
+                {% trans "Details" %}
+            </h1>
+        </div>
+    </div>
+
+    <div id="message_container" class="container">
+        <p id="author">
+            {#            {{ message.author }}#}
+        </p>
+        <p id="publication_date">
+            {#            {{ message.publication_date }}#}
+        </p>
+        <p id="message_text">
+            {{ message.message_text }}
+        </p>
+    </div>
+
+{% endblock content %}
+
+
+{% block javascript %}
+
+    <script type="text/javascript">
+
+        // When the page is fully loaded
+        $(document).ready(function() {
+
+            // Load the message detail
+            get_message();
+
+        });
+
+
+        // Get the message and display it
+        var get_message = function () {
+            var url = "{% url 'firstapp:rest:message-detail' '12345' %}".replace(/12345/, {{ message_id }});
+
+            $.ajax({
+                type: "get",
+                url: url,
+                success: function(data) {
+
+                    $("#publication_date").html(data.publication_date);
+                    $("#message_text").html(data.message_text);
+
+                    {% if user.is_authenticated %}
+                        if( data.link.delete ) {
+                            var content = "<button id=\"delete\" rel=\"" + data.link.delete + "\">X</button>";
+                            $('#message_container').append(content);
+                        }
+                    {% endif %}
+
+                    get_author(data.author);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    $('#message_text').html(jqXHR.responseText);
+                }
+            });
+        };
+
+
+        // Get the message author and display it
+        var get_author = function (userId) {
+            var restUrl = "{% url 'firstapp:rest:author-detail' '12345' %}".replace(/12345/, userId);
+            var userUrl = "{% url 'firstapp:author-detail' '12345' %}".replace(/12345/, userId);
+
+            $.ajax({
+                type: "get",
+                url: restUrl,
+                success: function(data) {
+                    var usernameContent = "<a href=\"" + userUrl + "\">" + data.username + "</a>";
+                    $("#author").html(usernameContent);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    $('#message_text').html(jqXHR.responseText);
+                }
+            });
+        };
+
+
+        // Click on a delete button
+        $('#message_container').on('click', 'button', function () {
+            var url = $(this).attr('rel');
+
+            $.ajax({
+                type: "delete",
+                url: url,
+                // Set CSRF token
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                },
+                success: function(response) {
+                    // Redirect to the home page
+                    window.location.replace("{% url 'firstapp:index' %}");
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log(jqXHR.responseText);
+                }
+            });
+        });
+
+    </script>
+
+{% endblock javascript %}
