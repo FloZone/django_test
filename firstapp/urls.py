@@ -1,4 +1,5 @@
 from django.conf.urls import url, include
+from django.views.decorators.cache import cache_page
 
 from rest_framework.routers import DefaultRouter
 
@@ -17,9 +18,9 @@ router.register(r'author', views.RestAuthorView)
 
 urlpatterns = [
     # Views
-    url(r'^$', views.index, name='index'),  # index page
-    url(r'^message/(?P<message_id>[0-9]+)/$', views.message_detail, name='message-detail'),  # message detail page
-    url(r'^author/(?P<author_id>[0-9]+)/$', views.author_detail, name='author-detail'),  # author detail page
+    url(r'^$', cache_page(60 * 15)(views.index), name='index'),  # index page
+    url(r'^message/(?P<message_id>[0-9]+)/$', cache_page(60 * 15)(views.message_detail), name='message-detail'),  # message detail page
+    url(r'^author/(?P<author_id>[0-9]+)/$', cache_page(60 * 15)(views.author_detail), name='author-detail'),  # author detail page
 
     # User logging
     url(r'^logout$', views.logout_user, name='logout'),

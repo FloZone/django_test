@@ -154,15 +154,15 @@ LOGGING = {
 
 
 # Memcached
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#         'LOCATION': 'localhost:11211',
-#         'OPTIONS': {
-#             'server_max_value_length': 1024 * 1024 * 512,# 512MB
-#         }
-#     }
-# }
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': 'localhost:11211',
+        'OPTIONS': {
+            'server_max_value_length': 1024 * 1024 * 2,  # 2MB
+        }
+    }
+}
 
 
 # Google oauth settings
