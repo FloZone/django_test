@@ -27,6 +27,6 @@ urlpatterns = [
 
     # REST framework
     url(r'^rest/', include(router.urls, namespace='rest')),
-    url(r'^rest/', router.get_api_root_view(), name="restapi"),
+    url(r'^rest/', router.get_api_root_view(), name="rest"),
 
 ]
