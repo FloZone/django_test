@@ -2,42 +2,54 @@
 
 {% load i18n %}
 
+
+{% block title %}
+    {# Translators: Author page title #}
+    {% trans "Author page" %}
+{% endblock %}
+
+
+{% block subtitle %}
+    {{ author.username }}
+{% endblock %}
+
+
 {% block content %}
 
-    <div class="jumbotron">
-        <div class="container">
-            <h1>
-                {# Translators: Author page title #}
-                {% trans "Author page" %}
-            </h1>
-        </div>
-    </div>
+    <div class="section">
 
-    <div id="author_container" class="container">
-        <p>{{ author.username }}</p>
         <p>{{ author.first_name }}</p>
         <p>{{ author.last_name }}</p>
         <p>{{ author.email }}</p>
         <p>{{ author.timezone }}</p>
 
-        {% if user.is_authenticated and user.is_staff %}
-            <form action="{% url 'firstapp:author-detail' author.id %}" method="POST">
+    </div>
+
+
+    {% if user.is_authenticated and user.is_staff %}
+        <div class="section">
+
+            <form action="{% url 'firstapp:author-detail' author.id %}" method="POST" class="col s12">
                 {% csrf_token %}
+
                 {# Translators: Timezone form select label #}
                 <label for="timezone">{% trans "Update your timezone" %}</label>
-                <select name="timezone">
+
+                <select name="timezone" id="timezone">
                     {% for timezone in timezones %}
-                        <option value="{{ timezone }}" {% if timezone == author.timezone %} selected="selected" {% endif %}>
+                        <option value="{{ timezone }}" {% if timezone == author.timezone %} disabled selected {% endif %}>
                             {{ timezone }}
                         </option>
                     {% endfor %}
                 </select>
-                {# Translators: Timezone form button #}
-                <input type="submit" value="{% trans "Update" %}" />
-            </form>
-        {% endif %}
 
-    </div>
+                {# Translators: Timezone form button #}
+                <input type="submit" value="{% trans 'Update' %}" class="btn waves-effect waves-light" />
+
+            </form>
+        </div>
+    {% endif %}
+
 
     <!-- Snackbar -->
     <div id="snackbar"></div>
@@ -51,6 +63,9 @@
 
         // When the page is fully loaded
         $(document).ready(function() {
+
+            // Init the form
+            $('select').material_select();
 
             // Get the snackbar
             var snackbar = $("#snackbar");

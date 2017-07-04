@@ -1,23 +1,17 @@
 import datetime
 import logging
+import requests
+import pytz
 
 from django.contrib.auth import logout
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
-from django.views import generic
 from django.utils.translation import gettext
-from django.http import HttpResponse
-from django.template import loader
 
-import requests
-
-from rest_framework import permissions, viewsets, status
-from rest_framework.decorators import api_view
+from rest_framework import permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-
-import pytz
 
 from .models import Message, Author
 from .permissions import IsAuthorOrAdminOrReadOnly
@@ -66,6 +60,7 @@ def author_detail(request, author_id):
                 author.save()
                 logging.info("Timezone updated for %s by %s" % (author.username, request.user.username))
                 # add info to the template
+                # Translators: Toast message when timezone is successfully updated
                 context['info'] = gettext("Timezone updated :)")
             else:
                 logging.info("WARNING: a non-admin user (%s) try to update the timezone for %s" % (author.username, request.user.username))
@@ -137,6 +132,7 @@ class RestMessageView(viewsets.ModelViewSet):
         # get the message list or a text when no one are available
         message_list = super().list(request, *args, **kwargs)
         if len(message_list.data) == 0:
+            # Translators: Text displayed on index.html when there are no messages
             return Response(gettext('No messages are available.'))
         else:
             return message_list

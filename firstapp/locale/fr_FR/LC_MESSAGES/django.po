@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-07-02 17:02+0200\n"
+"POT-Creation-Date: 2017-07-04 12:11+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,26 +17,77 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. Translators: Author page title
+#: .\firstapp\templates\firstapp\author.html:8
+msgid "Author page"
+msgstr "Page de l'auteur"
+
+#. Translators: Timezone form select label
+#: .\firstapp\templates\firstapp\author.html:36
+msgid "Update your timezone"
+msgstr "Mettre à jour la timezone"
+
+#. Translators: Timezone form button
+#: .\firstapp\templates\firstapp\author.html:47
+msgid "Update"
+msgstr "Mettre à jour"
+
+#. Translators: Project title
+#: .\firstapp\templates\firstapp\base.html:14
+#: .\firstapp\templates\firstapp\base.html:40
+#: .\firstapp\templates\firstapp\base.html:146
+msgid "Madafaka"
+msgstr "Madafaka"
+
+#. Translators: Log out text
+#: .\firstapp\templates\firstapp\base.html:59
+#: .\firstapp\templates\firstapp\base.html:88
+msgid "Log out"
+msgstr "Déconnecter"
+
+#. Translators: Log in text
+#: .\firstapp\templates\firstapp\base.html:66
+#: .\firstapp\templates\firstapp\base.html:95
+msgid "Log in"
+msgstr "Connecter"
+
+#. Translators: Project subtitle
+#: .\firstapp\templates\firstapp\base.html:150
+#: .\firstapp\templates\firstapp\index.html:14
+#, fuzzy
+#| msgid "Simple Django project. Biatch."
+msgid "A simple Django project. Biatch."
+msgstr "Projet Django simple. Biatch"
+
 #. Translators: Index title
-#: .\firstapp\templates\firstapp\index.html:11
+#: .\firstapp\templates\firstapp\index.html:8
 msgid "Hello World!"
 msgstr "Bonjour Monde!"
 
-#. Translators: Index subtitle
-#: .\firstapp\templates\firstapp\index.html:15
-msgid "Simple Django project. Biatch."
-msgstr "Projet Django simple. Biatch"
-
 #. Translators: Post message form: label for input text
-#: .\firstapp\templates\firstapp\index.html:49
+#: .\firstapp\templates\firstapp\index.html:36
 msgid "New message"
 msgstr "Nouveau message"
 
+#. Translators: Post message form: placeholder for input text
+#: .\firstapp\templates\firstapp\index.html:41
+msgid "Your message text"
+msgstr ""
+
 #. Translators: Post message form: submit button label{% endcomment
-#: .\firstapp\templates\firstapp\index.html:54
+#: .\firstapp\templates\firstapp\index.html:44
 msgid "Send"
 msgstr "Envoyer"
 
-#: .\firstapp\views.py:110
+#. Translators: Detail page title
+#: .\firstapp\templates\firstapp\message.html:8
+msgid "Details"
+msgstr "Détails"
+
+#: .\firstapp\views.py:72
+msgid "Timezone updated :)"
+msgstr "Timezone mise à jour :)"
+
+#: .\firstapp\views.py:143
 msgid "No messages are available."
 msgstr "Aucun message disponible"

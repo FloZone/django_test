@@ -2,7 +2,6 @@
 
 {% load i18n %}
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,81 +10,169 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>
-        {# Translators: Project subtitle #}
+        {# Translators: Project title #}
         {% trans "Madafaka" %}
     </title>
 
-    <link rel="stylesheet" type="text/css" href="{% static 'firstapp/css/bootstrap.min.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'firstapp/css/bootstrap-theme.min.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'firstapp/css/jumbotron.css' %}" />
+    <!-- Google Icon Font -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="{% static 'firstapp/css/font-awesome.min.css' %}" rel="stylesheet">
+    <!-- Materialize -->
+    <link type="text/css" rel="stylesheet" href="{% static 'firstapp/css/materialize.min.css' %}"  media="screen,projection"/>
+    <!-- Snackbar -->
     <link rel="stylesheet" type="text/css" href="{% static 'firstapp/css/snackbar.css' %}" />
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
 
 
 <body>
 
-<nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="{% url 'firstapp:index' %}">
-                {# Translators: Project subtitle #}
-                {% trans "Madafaka" %}
-            </a>
-        </div>
-        <div id="navbar" class="collapse navbar-collapse">
-            <ul class="nav navbar-nav navbar-right">
-                {% if user.is_authenticated %}
-                    {% if user.is_staff %}
+{# Nav + menu #}
+<nav class="light-blue lighten-1" role="navigation">
+    <div class="nav-wrapper container">
 
-                        <li><p class="navbar-text">
-                            <a href="{% url "admin:index" %}">Admin Django</a>
-                        </p></li>
+        {# Nav title #}
+        <a id="logo-container" href="{% url 'firstapp:index' %}" class="brand-logo">
+            {# Translators: Project title #}
+            {% trans "Madafaka" %}
+        </a>
 
-                        <li><p class="navbar-text">
-                            <a href="{% url "firstapp:rest" %}">API REST</a>
-                        </p></li>
-                    {% endif %}
-
-                    <li><p class="navbar-text">
-                        {{ user.first_name }} {{ user.last_name }} (<a href="{% url 'firstapp:author-detail' user.id %}">{{ user.email }}</a>)
-                    </p></li>
-
+        {# Desktop nav menu (when full witdh #}
+        <ul class="right hide-on-med-and-down">
+            {% if user.is_authenticated %}
+                {% if user.first_name or user.last_name %}
                     <li>
-                        <a href="{% url 'firstapp:logout' %}">
-                            {# Translators: Log out text #}
-                            {% trans "Log out" %}
+                        <a href="{% url 'firstapp:author-detail' user.id %}">
+                            {{ user.first_name }} {{ user.last_name }}
                         </a>
                     </li>
-                {% else %}
-                    <li>
-                        <a href="{% url 'firstapp:social:begin' 'google-oauth2' %}">
-                            {# Translators: Log in text #}
-                            {% trans "Log in" %}
-                        </a>
-                    </li>
-
                 {% endif %}
-            </ul>
-        </div><!--/.nav-collapse -->
+                <li>
+                    <a href="{% url 'firstapp:author-detail' user.id %}">{{ user.email }}</a>
+                </li>
+                <li>
+                    <a href="{% url 'firstapp:logout' %}">
+                        {# Translators: Log out text #}
+                        {% trans "Log out" %}
+                    </a>
+                </li>
+            {% else %}
+                <li>
+                    <a href="{% url 'firstapp:social:begin' 'google-oauth2' %}">
+                        {# Translators: Log in text #}
+                        {% trans "Log in" %}
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+
+        {# Mobile nav menu (when no full witdh #}
+        <ul id="nav-mobile" class="side-nav">
+            {% if user.is_authenticated %}
+                {% if user.first_name or user.last_name %}
+                    <li>
+                        <a href="{% url 'firstapp:author-detail' user.id %}">
+                            {{ user.first_name }} {{ user.last_name }}
+                        </a>
+                    </li>
+                {% endif %}
+                <li>
+                    <a href="{% url 'firstapp:author-detail' user.id %}">{{ user.email }}</a>
+                </li>
+                <li>
+                    <a href="{% url 'firstapp:logout' %}">
+                        {# Translators: Log out text #}
+                        {% trans "Log out" %}
+                    </a>
+                </li>
+            {% else %}
+                <li>
+                    <a href="{% url 'firstapp:social:begin' 'google-oauth2' %}">
+                        {# Translators: Log in text #}
+                        {% trans "Log in" %}
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+
+        <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
     </div>
 </nav>
 
 
+{# Content #}
 <div class="container">
 
+    {# Title & subtitle #}
+    <div class="section no-pad-bot">
+        <div class="container">
+            <br><br>
+            <h1 class="header center orange-text">
+
+                {% block title %}
+                {% endblock %}
+
+            </h1>
+            <div class="row center">
+                <h5 class="header col s12 light">
+
+                    {% block subtitle %}
+                    {% endblock %}
+
+                </h5>
+            </div>
+        </div>
+    </div>
+
+    {# Page content #}
     {% block content %}
     {% endblock %}
 
-</div><!-- /.container -->
+</div>
 
+
+{# Footer #}
+<div><br><br></div>
+<footer class="page-footer orange">
+    <div class="container">
+        <div class="row">
+
+            <div class="col s6">
+                <h5 class="white-text">
+                    {# Translators: Project title #}
+                    {% trans "Madafaka" %}
+                </h5>
+                <p class="grey-text text-lighten-4">
+                    {# Translators: Project subtitle #}
+                    {% trans "A simple Django project. Biatch." %}
+                </p>
+            </div>
+
+
+            <div class="col s6">
+                <h5 class="white-text">Settings</h5>
+                <ul>
+                    <li><a class="white-text" href="{% url "admin:index" %}">Admin Django</a></li>
+                    <li><a class="white-text" href="{% url "firstapp:rest" %}">API REST</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="footer-copyright">
+        <div class="container">
+            Made by <a class="orange-text text-lighten-3">FloZone</a>
+        </div>
+    </div>
+</footer>
+
+
+{# JS part #}
 <script type="text/javascript" src="{% static 'firstapp/js/jquery-3.2.1.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'firstapp/js/bootstrap.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'firstapp/js/materialize.js' %}"></script>
+<script type="text/javascript" src="{% static 'firstapp/js/init-materialize.js' %}"></script>
 <script type="text/javascript">
     // CSRF TOKEN
 
@@ -111,8 +198,10 @@
     }
 </script>
 
+
 {% block javascript %}
 {% endblock %}
+
 
 </body>
 </html>

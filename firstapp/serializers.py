@@ -1,6 +1,7 @@
+import pytz
+
 from rest_framework import serializers
 from rest_framework.reverse import reverse
-import pytz
 
 from .models import Message, Author
 

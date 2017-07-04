@@ -2,27 +2,42 @@
 
 {% load i18n %}
 
+
+{% block title %}
+    {# Translators: Detail page title #}
+    {% trans "Details" %}
+{% endblock %}
+
+
 {% block content %}
 
-    <div class="jumbotron">
-        <div class="container">
-            <h1>
-                {# Translators: Detail page title #}
-                {% trans "Details" %}
-            </h1>
+    <div class="section">
+
+        <div class="row">
+            <div class="col s4">
+                <p id="publication_date">
+                </p>
+            </div>
+
+            <div class="col s4">
+                <p id="author">
+                </p>
+            </div>
         </div>
+
+        <div class="row">
+            <div class="col s12">
+                <div class="card-panel">
+                    <p id="message_text">
+                        {{ message.message_text }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <div id="message_container" class="container">
-        <p id="author">
-            {#            {{ message.author }}#}
-        </p>
-        <p id="publication_date">
-            {#            {{ message.publication_date }}#}
-        </p>
-        <p id="message_text">
-            {{ message.message_text }}
-        </p>
+    <div class="section" id="delete_container">
     </div>
 
 {% endblock content %}
@@ -55,8 +70,12 @@
 
                     {% if user.is_authenticated %}
                         if( data.link.delete ) {
-                            var content = "<button id=\"delete\" rel=\"" + data.link.delete + "\">X</button>";
-                            $('#message_container').append(content);
+                            var content =
+                                "<button id=\"delete\" rel=\"" + data.link.delete + "\" class=\"btn waves-effect waves-light\" >"
+                                + "<i class=\"material-icons left\">delete</i>"
+                                + "Delete"
+                                + "</button>";
+                            $('#delete_container').append(content);
                         }
                     {% endif %}
 

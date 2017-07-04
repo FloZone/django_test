@@ -2,60 +2,51 @@
 
 {% load i18n %}
 
+
+{% block title %}
+    {# Translators: Index title #}
+    {% trans "Hello World!" %}
+{% endblock %}
+
+
+{% block subtitle %}
+    {# Translators: Project subtitle #}
+    {% trans "A simple Django project. Biatch." %}
+{% endblock %}
+
+
 {% block content %}
 
-    <div class="jumbotron">
-        <div class="container">
-            <h1>
-                {# Translators: Index title #}
-                {% trans "Hello World!" %}
-            </h1>
-            <p>
-                {# Translators: Index subtitle #}
-                {% trans "Simple Django project. Biatch." %}
-            </p>
+    {# Message list #}
+    <div class="section">
+        <div class="row" id="message_container">
+
         </div>
     </div>
 
-    <div class="container">
-        <ul id="message_container">
-            <!-- When the page is loaded the first time -->
-            {% comment %} {% if message_list %}
-                {% for message in message_list %}
-                    <li>
-                        {% if user.is_authenticated %}
-                            {% if user == message.author or user.is_staff %}
-                                (<button rel="{{ message.id }}">X</button>)
-                            {% endif %}
-                        {% endif %}
+    {# Post form #}
+    <div class="section">
+        {# TODO div propre en rouge #}
+        <p id="result"></p>
 
-                        <a href="{% url 'firstapp:detail' message.id %}">{{ message.message_text }}</a>
-                    </li>
-                {% endfor %}
-            {% else %}
-                <p>No messages are available.</p>
-            {% endif %}{% endcomment %}
-        </ul>
-    </div>
-
-    <div class="container">
         {% if user.is_authenticated %}
-            <p id="result"></p>
-            <form id="post_form">
-                {% csrf_token %}
+            <form id="post_form" class="col s12">
                 <label for="message_text">
                     {# Translators: Post message form: label for input text #}
                     {% trans "New message" %}
                 </label>
-                <input type="text" name="message_text" id="message_text" maxlength="140" />
+
+                {% csrf_token %}
+                {# Translators: Post message form: placeholder for input text #}
+                <input type="text" placeholder="{% trans "Your message text" %}" name="message_text" id="message_text" maxlength="140" data-length="140" class="validate"/>
 
                 {# Translators: Post message form: submit button label{% endcomment #}
-                <input type="submit" value="{% trans "Send" %}" />
+                <input type="submit" value="{% trans "Send" %}" class="btn waves-effect waves-light"/>
             </form>
         {% endif %}
     </div>
 
-    <!-- Snackbar -->
+    {# Snackbar #}
     <div id="snackbar"></div>
 
 {% endblock content %}
@@ -80,20 +71,19 @@
             ws.onmessage = function(evt) {
                 console.log("Websocket: receive: " + evt.data);
                 if(evt.data.startsWith("message_update")) {
-                    console.log("refresh message list");
 
                     var eventMessage;
                     var event = evt.data.replace("message_update_", "");
                     if(event === "create") {
-                        //TODO trad
+                        {# TODO trad #}
                         eventMessage = "New message :)";
                     }
                     else if(event === "delete") {
-                        //TODO trad
+                        {# TODO trad #}
                         eventMessage = "A message was deleted :(";
                     }
                     else {
-                        eventMessage = "unknown"
+                        eventMessage = "Unknown"
                     }
 
                     // Snackbar
@@ -120,6 +110,7 @@
 
         // Get the message list and display it
         var get_message_list = function () {
+            console.log("get message list")
             $.ajax({
                 type: "get",
                 url: "{% url 'firstapp:rest:message-list' %}",
@@ -133,18 +124,35 @@
                     // If there is a list of messages
                     else {
                         for(var i = 0; i < data.length; ++i) {
-                            content += "<li>";
 
+                            content += ""
+                                + "<div class=\"col l6 m12\">"
+                                + "<div class=\"card hoverable grey lighten-5 z-depth-1\">"
+                                + "<div class=\"card-content truncate\">"
+                                + "<p><b>"
+                                + data[i].publication_date
+                                + "</b><br>"
+                                + "<br>"
+                                + data[i].message_text
+                                + "</p>";
+
+                            {# If the user is allowed to delete the message #}
                             {% if user.is_authenticated %}
                                 if( data[i].link.delete ) {
-                                    content += "(<button rel=\"" + data[i].link.delete + "\">X</button>) ";
+                                    content +=
+                                        "<button rel=\"" + data[i].link.delete + "\" class=\"btn-floating halfway-fab waves-effect waves-light red\">"
+                                        + "<i class=\"material-icons\">delete</i>" +
+                                        + "</button>"
                                 }
                             {% endif %}
 
-                            content += "<i>" + data[i].publication_date + "</i> ";
-                            content += data[i].message_text + " ";
-                            content += "<b><a href=\"" + data[i].link.detail + "\">>></a></b>";
-                            content += "</li>";
+                            content +=
+                                "</div>"
+                                + "<div class=\"card-action\">"
+                                {# TODO trad #}
+                                + "<a href=\"" + data[i].link.detail + "\">Details</a>"
+                                + "</div></div></div>";
+
                         }
                     }
                     // Display the content
